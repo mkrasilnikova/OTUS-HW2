@@ -26,9 +26,10 @@ object Main extends App {
       val destDir = new Path(destPathRoot, fs.getPath.getName)
       createFolder(destDir)
       val destFilePath = new Path(destDir, fileStatuses(0).getPath.getName)
-      val renamed = fileSystem.rename(concatFilePath, destFilePath)
+      fileSystem.rename(concatFilePath, destFilePath)
       fileSystem.delete(dirPath, true)
     })
+  fileSystem.close()
 
 
   def createFolder(path: Path): Unit = {
