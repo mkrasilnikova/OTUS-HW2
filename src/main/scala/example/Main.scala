@@ -13,23 +13,45 @@ object Main extends App {
   val sourcePath = new Path("/stage")
   val destPathRoot = new Path("/ods")
 
-  createFolder(destPathRoot)
-  fileSystem.listStatus(sourcePath).foreach(fs => {
+  try {
+    createFolder(destPathRoot)
+    fileSystem.listStatus(sourcePath).foreach(fs => {
       val dirPath = fs.getPath
+      println("folder " + dirPath)
+
       val fileStatuses = fileSystem.listStatus(dirPath)
         .filter(fs => fs.getPath.getName.contains("csv"))
+
+      println("files: ")
+      fileStatuses
+        .foreach(fs => println(fs.getPath.getName))
+
       val concatFilePath = new Path(dirPath, fileStatuses(0).getPath.getName)
+      println("concatenating files in the folder ... resulting file \n" + concatFilePath)
+
       val sourcePaths: Array[Path] = fileStatuses.map(fs => fs.getPath).tail
       if (sourcePaths.size > 0) {
         fileSystem.concat(concatFilePath, sourcePaths)
       }
+
       val destDir = new Path(destPathRoot, fs.getPath.getName)
+      println("create folder " + destDir)
       createFolder(destDir)
+
       val destFilePath = new Path(destDir, fileStatuses(0).getPath.getName)
+      println("tranfer file into new directory " + destFilePath)
       fileSystem.rename(concatFilePath, destFilePath)
+
+      println("delete old folder " + dirPath)
       fileSystem.delete(dirPath, true)
+
+      println("_________________________")
     })
-  fileSystem.close()
+  } catch {
+    case e: Exception => println(e.getMessage)
+  } finally {
+    fileSystem.close()
+  }
 
 
   def createFolder(path: Path): Unit = {
